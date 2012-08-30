@@ -2,6 +2,7 @@ import logging
 import traceback
 import urllib2
 import os
+import sys
 import xmlbuilder
 
 from django.core.urlresolvers import resolve
@@ -119,4 +120,4 @@ class AirbrakeHandler(logging.Handler):
         elif status == 503:
             exceptionMessage = "Service unavailable. You may be over your quota."
 
-        raise StandardError(exceptionMessage)
+        print >>sys.stderr, '[django-airbrake]', exceptionMessage
