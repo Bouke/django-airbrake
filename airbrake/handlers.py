@@ -7,7 +7,7 @@ import xmlbuilder
 from django.core.urlresolvers import resolve
 from django.http import Http404
 
-from airbrake import __version__, __name__, __url__
+from airbrake import __version__, __app_name__, __app_url__
 
 # Adapted from Pulse Energy's AirbrakePy
 # https://github.com/pulseenergy/airbrakepy
@@ -55,9 +55,9 @@ class AirbrakeHandler(logging.Handler):
         with xml.notice(version=2.0):
             xml << ('api-key', self.api_key)
             with xml.notifier:
-                xml << ('name', __name__)
+                xml << ('name', __app_name__)
                 xml << ('version', __version__)
-                xml << ('url', __url__)
+                xml << ('url', __app_url__)
             with xml('server-environment'):
                 xml << ('environment-name', self.env_name)
                 # (project-root | app-version)
