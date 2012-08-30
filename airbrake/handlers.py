@@ -112,7 +112,7 @@ class AirbrakeHandler(logging.Handler):
     def _sendMessage(self, message):
         headers = {"Content-Type": "text/xml"}
         status = self._sendHttpRequest(headers, message)
-        if status == 200 or status == 201:
+        if status == 200:
             return
 
         exceptionMessage = "Unexpected status code {0}".format(str(status))
