@@ -15,17 +15,20 @@ from airbrake import __version__, __app_name__, __app_url__
 # Changes for django compatibility by Bouke Haarsma
 
 _DEFAULT_API_URL = "https://airbrakeapp.com/notifier_api/v2/notices"
-_DEFAULT_ENV_VARIABLES = ["DJANGO_SETTINGS_MODULE",]
+_DEFAULT_ENV_VARIABLES = ["DJANGO_SETTINGS_MODULE", ]
+_DEFAULT_META_VARIABLES = ["HTTP_USER_AGENT", "HTTP_COOKIE", "REMOTE_ADDR",
+                           "SERVER_NAME", "SERVER_SOFTWARE", ]
 
 class AirbrakeHandler(logging.Handler):
     def __init__(self, api_key, env_name, api_url=_DEFAULT_API_URL,
-                 timeout=30, env_variables=_DEFAULT_ENV_VARIABLES):
+                 timeout=30, env_variables=_DEFAULT_ENV_VARIABLES,
+                 meta_variables=_DEFAULT_META_VARIABLES):
         logging.Handler.__init__(self)
         self.api_key = api_key
         self.api_url = api_url
         self.env_name = env_name
         self.env_variables = env_variables
-        self.logger = logging.getLogger(__name__)
+        self.meta_variables = meta_variables
         self.timeout = timeout
 
     def emit(self, record):
@@ -78,6 +81,9 @@ class AirbrakeHandler(logging.Handler):
                         [xml << ('var', value, {'key': key})
                             for key, value in os.environ.items()
                             if key in self.env_variables]
+                        [xml << ('var', str(value), {'key': key})
+                            for key, value in request.META.items()
+                            if key in self.meta_variables]
 
             with xml.error:
                 xml << ('class', exn.__class__.__name__ if exn else '')
