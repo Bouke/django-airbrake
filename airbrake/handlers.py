@@ -14,10 +14,10 @@ from airbrake import __version__, __app_name__, __app_url__
 # https://github.com/pulseenergy/airbrakepy
 # Changes for django compatibility by Bouke Haarsma
 
-_DEFAULT_API_URL = "https://airbrakeapp.com/notifier_api/v2/notices"
-_DEFAULT_ENV_VARIABLES = ["DJANGO_SETTINGS_MODULE", ]
-_DEFAULT_META_VARIABLES = ["HTTP_USER_AGENT", "HTTP_COOKIE", "REMOTE_ADDR",
-                           "SERVER_NAME", "SERVER_SOFTWARE", ]
+_DEFAULT_API_URL = 'https://airbrakeapp.com/notifier_api/v2/notices'
+_DEFAULT_ENV_VARIABLES = ['DJANGO_SETTINGS_MODULE', ]
+_DEFAULT_META_VARIABLES = ['HTTP_USER_AGENT', 'HTTP_COOKIE', 'REMOTE_ADDR',
+                           'SERVER_NAME', 'SERVER_SOFTWARE', ]
 
 class AirbrakeHandler(logging.Handler):
     def __init__(self, api_key, env_name, api_url=_DEFAULT_API_URL,
