@@ -41,7 +41,7 @@ class AirbrakeHandler(logging.Handler):
             _, exn, trace = record.exc_info
 
         request = None
-        if record.request:
+        if hasattr(record, 'request'):
             request = record.request
 
         match = None
