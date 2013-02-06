@@ -1,16 +1,21 @@
 language: python
 python:
-  - "2.6"
-  - "2.7"
+  - 2.6
+  - 2.7
+  - 3.3
 env:
-  - DJANGO=1.3.5
-  - DJANGO=1.4.3
+  - DJANGO=django==1.3.5 --use-mirrors
+  - DJANGO=django==1.4.3 --use-mirrors
   - DJANGO=https://github.com/django/django/archive/1.5b2.zip
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
-  - pip install . --use-mirrors
 matrix:
   exclude:
-    - python: "2.5"
-      env: DJANGO=https://github.com/django/django/archive/1.5b2.zip
+    - python: 3.3
+      env: DJANGO=django==1.3.5 --use-mirrors
+    - python: 3.3
+      env: DJANGO=django==1.4.3 --use-mirrors
+install:
+  - pip install $DJANGO
+  - pip install -r requirements.txt --use-mirrors
+  # run 2to3 for Python 3.3
+  - "if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then 2to3 -w -n --no-diffs . 2>&1 | tail -n 2; fi"
 script: python tests.py
