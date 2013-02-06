@@ -3,7 +3,7 @@ import traceback
 import urllib2
 import os
 import sys
-import xmlbuilder
+from xml.etree.ElementTree import Element, tostring, SubElement
 
 from django.core.urlresolvers import resolve
 from django.http import Http404
@@ -40,65 +40,68 @@ class AirbrakeHandler(logging.Handler):
         if record.exc_info:
             _, exn, trace = record.exc_info
 
-        request = None
-        if hasattr(record, 'request'):
-            request = record.request
-
-        match = None
-        if request:
-            try:
-                match = resolve(request.path_info)
-            except Http404:
-                pass
-
         message = record.getMessage()
         if exn:
             message = "{0}: {1}".format(message, str(exn))
 
-        xml = xmlbuilder.XMLBuilder()
-        with xml.notice(version=2.0):
-            xml << ('api-key', self.api_key)
-            with xml.notifier:
-                xml << ('name', __app_name__)
-                xml << ('version', __version__)
-                xml << ('url', __app_url__)
-            with xml('server-environment'):
-                xml << ('environment-name', self.env_name)
-                # (project-root | app-version)
-            if request:
-                with xml.request:
-                    xml << ("url", request.build_absolute_uri())
-                    if match:
-                        xml << ("component", match.url_name)
-                        xml << ("action", request.method)
-                    with xml.params:
-                        [xml << ('var', value, {'key': key})
-                            for key, value in request.REQUEST.items()]
-                    with xml.session:
-                        [xml << ('var', str(value), {'key': key})
-                            for key, value in request.session.items()]
-                    with xml('cgi-data'):
-                        [xml << ('var', value, {'key': key})
-                            for key, value in os.environ.items()
-                            if key in self.env_variables]
-                        [xml << ('var', str(value), {'key': key})
-                            for key, value in request.META.items()
-                            if key in self.meta_variables]
+        xml = Element('notice', dict(version='2.0'))
+        SubElement(xml, 'api-key').text = self.api_key
 
-            with xml.error:
-                xml << ('class', exn.__class__.__name__ if exn else '')
-                xml << ('message', message)
-                with xml.backtrace:
-                    if trace is None:
-                        [xml << ('line', {'file': record.pathname,
-                                          'number': record.lineno,
-                                          'method': record.funcName})]
-                    else:
-                        [xml << ('line', {'file': filename,
-                                          'number': line_number,
-                                          'method': "{0}: {1}".format(function_name, text)})
-                         for filename, line_number, function_name, text in traceback.extract_tb(trace)]
-        return str(xml)
+        notifier = SubElement(xml, 'notifier')
+        SubElement(notifier, 'name').text = __app_name__
+        SubElement(notifier, 'version').text = __version__
+        SubElement(notifier, 'url').text = __app_url__
+
+        server_env = SubElement(xml, 'server-environment')
+        SubElement(server_env, 'environment-name').text = self.env_name
+
+        if hasattr(record, 'request'):
+            request = record.request
+            try:
+                match = resolve(request.path_info)
+            except Http404:
+                match = None
+
+            request_xml = SubElement(xml, 'request')
+            SubElement(request_xml, 'url').text = request.build_absolute_uri()
+
+            if match:
+                SubElement(request_xml, 'component').text = match.url_name
+                SubElement(request_xml, 'action').text = request.method
+
+            params = SubElement(request_xml, 'params')
+            for key, value in request.REQUEST.items():
+                SubElement(params, 'var', dict(key=key)).text = str(value)
+
+            session = SubElement(request_xml, 'session')
+            for key, value in request.session.items():
+                SubElement(session, 'var', dict(key=key)).text = str(value)
+
+            cgi_data = SubElement(request_xml, 'cgi-data')
+            for key, value in os.environ.items():
+                if key in self.env_variables:
+                    SubElement(cgi_data, 'var', dict(key=key)).text = str(value)
+            for key, value in request.META.items():
+                if key in self.meta_variables:
+                    SubElement(cgi_data, 'var', dict(key=key)).text = str(value)
+
+        error = SubElement(xml, 'error')
+        SubElement(error, 'class').text = exn.__class__.__name__ if exn else ''
+        SubElement(error, 'message').text = message
+
+        backtrace = SubElement(error, 'backtrace')
+        if trace is None:
+            SubElement(backtrace, 'line', dict(file=record.pathname,
+                                               number=str(record.lineno),
+                                               method=record.funcName))
+        else:
+            for pathname, lineno, funcName, text in traceback.extract_tb(trace):
+                SubElement(backtrace, 'line', dict(file=pathname,
+                                                   number=str(lineno),
+                                                   method='%s: %s' % (funcName,
+                                                                      text)))
+
+        return tostring(xml)
 
     def _sendHttpRequest(self, headers, message):
         request = urllib2.Request(self.api_url, message, headers)
@@ -122,8 +125,10 @@ class AirbrakeHandler(logging.Handler):
         elif status == 422:
             exceptionMessage = "Invalid XML sent: {0}".format(message)
         elif status == 500:
-            exceptionMessage = "Destination server is unavailable. Please check the remote server status."
+            exceptionMessage = "Destination server is unavailable. " \
+                               "Please check the remote server status."
         elif status == 503:
-            exceptionMessage = "Service unavailable. You may be over your quota."
+            exceptionMessage = "Service unavailable. You may be over your " \
+                               "quota."
 
         print >>sys.stderr, '[django-airbrake]', exceptionMessage

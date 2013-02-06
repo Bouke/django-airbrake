@@ -15,7 +15,6 @@ setup(
     license='MIT',
     long_description=open('README.rst').read(),
     install_requires=[
-        'xmlbuilder >= 0.9, < 1.0',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
