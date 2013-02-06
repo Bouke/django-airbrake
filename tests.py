@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
             <api-key>MY_API_KEY</api-key>
             <notifier>
                 <name>django-airbrake</name>
-                <version>0.2.2</version>
+                <version>0.3.0</version>
                 <url>http://github.com/Bouke/django-airbrake</url>
             </notifier>
             <server-environment>
@@ -75,7 +75,7 @@ class Test(unittest.TestCase):
             <api-key>MY_API_KEY</api-key>
             <notifier>
                 <name>django-airbrake</name>
-                <version>0.2.2</version>
+                <version>0.3.0</version>
                 <url>http://github.com/Bouke/django-airbrake</url>
             </notifier>
             <server-environment>
