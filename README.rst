@@ -8,7 +8,8 @@ Django Airbrake
 
 Django Airbrake provides a logging handler to push exceptions and other errors
 to airbrakeapp or other airbrake-compatible exception handler services (e.g.
-aTech Media's Codebase).
+aTech Media's Codebase). Django 1.3, 1.4 and 1.5 on Python 2.6, 2.7 are
+supported, while support Django 1.5 on Python 3.3 is experimental.
 
 Installation
 ============
