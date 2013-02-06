@@ -1,7 +1,10 @@
 import logging
 import unittest
 from django import conf
-from django.conf.urls import url, patterns
+try:
+    from django.conf.urls import url, patterns
+except ImportError:  # django 1.3
+    from django.conf.urls.defaults import url, patterns
 from mock import Mock
 from airbrake.handlers import AirbrakeHandler
 import airbrake
