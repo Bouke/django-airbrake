@@ -14,4 +14,4 @@ matrix:
   exclude:
     - python: "2.5"
       env: DJANGO=https://github.com/django/django/archive/1.5b2.zip
-script: python -m unittest tests
+script: python tests.py
