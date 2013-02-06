@@ -2,6 +2,10 @@
 Django Airbrake
 ===============
 
+.. image:: https://travis-ci.org/Bouke/django-airbrake.png?branch=develop
+    :alt: Build Status
+    :target: https://travis-ci.org/Bouke/django-airbrake
+
 Django Airbrake provides a logging handler to push exceptions and other errors
 to airbrakeapp or other airbrake-compatible exception handler services (e.g.
 aTech Media's Codebase).
