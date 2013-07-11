@@ -56,6 +56,6 @@ def text_compare(t1, t2):
 
 
 def xsd_validate(tree):
-    xml_doc = etree.parse('schema.xsd')
+    xml_doc = etree.parse('tests/schema.xsd')
     xml_schema = etree.XMLSchema(xml_doc)
     assert xml_schema.validate(tree)
