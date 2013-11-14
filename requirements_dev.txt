@@ -1,0 +1,15 @@
+# The app itself
+
+-e .
+
+# Runtime dependencies
+
+Django
+
+# Testing
+
+mock
+lxml
+coverage
+flake8
+tox

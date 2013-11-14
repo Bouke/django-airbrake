@@ -1,6 +1,10 @@
 import logging
 import traceback
-import urllib2
+try:
+    from urllib.request import Request, urlopen
+    from urllib.error import HTTPError
+except ImportError:
+    from urllib2 import Request, urlopen, HTTPError
 import os
 import sys
 from xml.etree.ElementTree import Element, tostring, SubElement
@@ -18,6 +22,7 @@ _DEFAULT_API_URL = 'https://airbrakeapp.com/notifier_api/v2/notices'
 _DEFAULT_ENV_VARIABLES = ['DJANGO_SETTINGS_MODULE', ]
 _DEFAULT_META_VARIABLES = ['HTTP_USER_AGENT', 'HTTP_COOKIE', 'REMOTE_ADDR',
                            'SERVER_NAME', 'SERVER_SOFTWARE', ]
+
 
 class AirbrakeHandler(logging.Handler):
     def __init__(self, api_key, env_name, api_url=_DEFAULT_API_URL,
@@ -104,11 +109,11 @@ class AirbrakeHandler(logging.Handler):
         return tostring(xml)
 
     def _sendHttpRequest(self, headers, message):
-        request = urllib2.Request(self.api_url, message, headers)
+        request = Request(self.api_url, message, headers)
         try:
-            response = urllib2.urlopen(request, timeout=self.timeout)
+            response = urlopen(request, timeout=self.timeout)
             status = response.getcode()
-        except urllib2.HTTPError as e:
+        except HTTPError as e:
             status = e.code
         return status
 

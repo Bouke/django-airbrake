@@ -3,14 +3,16 @@ import unittest
 
 from lxml import etree
 from django import conf
+
 try:
     from django.conf.urls import url, patterns
 except ImportError:  # django 1.3
     from django.conf.urls.defaults import url, patterns
 from mock import Mock
 
+import airbrake
 from airbrake.handlers import AirbrakeHandler
-from utils import xml_compare, xsd_validate
+from .utils import xml_compare, xsd_validate
 
 
 class Test(unittest.TestCase):
@@ -37,7 +39,7 @@ class Test(unittest.TestCase):
             <api-key>MY_API_KEY</api-key>
             <notifier>
                 <name>django-airbrake</name>
-                <version>1.0.0</version>
+                <version>%(version)s</version>
                 <url>http://github.com/Bouke/django-airbrake</url>
             </notifier>
             <server-environment>
@@ -53,7 +55,9 @@ class Test(unittest.TestCase):
                 </backtrace>
             </error>
         </notice>
-        """), etree.fromstring(xml), self.fail))
+        """ % {'version': airbrake.__version__}),
+            etree.fromstring(xml),
+            self.fail))
 
     def test_django_request(self):
         def myview(request):
@@ -83,7 +87,7 @@ class Test(unittest.TestCase):
             <api-key>MY_API_KEY</api-key>
             <notifier>
                 <name>django-airbrake</name>
-                <version>1.0.0</version>
+                <version>%(version)s</version>
                 <url>http://github.com/Bouke/django-airbrake</url>
             </notifier>
             <server-environment>
@@ -101,6 +105,7 @@ class Test(unittest.TestCase):
                     <var key='user'>foobunny</var>
                 </session>
                 <cgi-data>
+                    <var key='DJANGO_SETTINGS_MODULE'>tests.settings</var>
                     <var key='HTTP_USER_AGENT'>my test agent</var>
                 </cgi-data>
             </request>
@@ -114,5 +119,6 @@ class Test(unittest.TestCase):
                 </backtrace>
             </error>
         </notice>
-        """ % {'name': __name__}), etree.fromstring(xml), self.fail))
-
+        """ % {'name': __name__, 'version': airbrake.__version__}),
+            etree.fromstring(xml),
+            self.fail))

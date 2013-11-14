@@ -1,3 +1,0 @@
-mock==1.0.1
-lxml==3.2.1
-# install Django 1.4 or 1.5 as you like
