@@ -1,3 +1,4 @@
 /django_airbrake.egg-info/
-
 /.tox/
+/.coverage
+/htmlcov/

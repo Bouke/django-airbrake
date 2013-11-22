@@ -15,5 +15,8 @@ matrix:
     - python: "3.3"
       env: DJANGO_VERSION=1.4.10
 install:
-  - pip install Django==$DJANGO_VERSION lxml mock
-script: make test
+  - pip install Django==$DJANGO_VERSION
+  - pip install -e .
+  - pip install coveralls lxml mock
+script: make coverage
+after_success: coveralls

@@ -2,9 +2,17 @@
 Django Airbrake
 ===============
 
-.. image:: https://travis-ci.org/Bouke/django-airbrake.png?branch=develop
+.. image:: https://travis-ci.org/Bouke/django-airbrake.png?branch=master
     :alt: Build Status
     :target: https://travis-ci.org/Bouke/django-airbrake
+
+.. image:: https://coveralls.io/repos/Bouke/django-airbrake/badge.png?branch=master
+    :alt: Test Coverage
+    :target: https://coveralls.io/r/Bouke/django-airbrake?branch=master
+
+.. image:: https://badge.fury.io/py/django-airbrake.png
+    :alt: PyPI
+    :target: https://pypi.python.org/pypi/django-airbrake
 
 Django Airbrake provides a logging handler to push exceptions and other errors
 to airbrakeapp or other airbrake-compatible exception handler services (e.g.
