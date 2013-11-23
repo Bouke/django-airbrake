@@ -19,7 +19,7 @@ to airbrakeapp or other airbrake-compatible exception handler services (e.g.
 aTech Media's Codebase). Django 1.4, 1.5 and 1.6 are supported on Python 2.6,
 2.7, 3.2 and 3.3.
 
-Install version 0.3.0 for Django 1.3 support.
+Django 1.3 was supported until version 0.3.0.
 
 Installation
 ============
@@ -86,3 +86,9 @@ Change the ``level`` to ``'ERROR'`` to disable logging of 404 error messages.
 
 ``timeout``
     Timeout in seconds to send the error report, defaults to 30 seconds.
+
+Contributing
+============
+* Fork the repository on GitHub and start hacking.
+* Run the tests.
+* Send a pull request with your changes.
