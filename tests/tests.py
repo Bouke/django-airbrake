@@ -8,6 +8,7 @@ except ImportError:
 from django.conf import settings
 from django.contrib.sessions.backends.db import SessionStore
 from django.test import TestCase
+from django.test.utils import override_settings
 
 import airbrake
 from .urls import ViewException
@@ -90,7 +91,6 @@ class XMLDataTest(TestCase):
                 <component>tests.urls.raises</component>
                 <action>POST</action>
                 <params>
-                    <var key='foo'>bar</var>
                     <var key='foo2'>bar2</var>
                 </params>
                 <session>
@@ -120,3 +120,18 @@ class XMLDataTest(TestCase):
         """ % {'version': airbrake.__version__, 'session': session.session_key}),
             etree.fromstring(xml),
             self.fail))
+
+
+@patch('airbrake.handlers.urlopen', autospec=True)
+@override_settings(INSTALLED_APPS=['tests'], MIDDLEWARE_CLASSES=())
+class NoSessionTest(TestCase):
+    def test_raises(self, urlopen):
+        urlopen.return_value.getcode.return_value = 200
+
+        try:
+            self.client.get('/raises/')
+        except ViewException:
+            pass
+
+        self.assertTrue(urlopen.call_count, 1)
+        xsd_validate(urlopen.call_args[0][0].data)

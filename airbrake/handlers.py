@@ -6,7 +6,6 @@ try:
 except ImportError:
     from urllib2 import Request, urlopen, HTTPError
 import os
-import sys
 from xml.etree.ElementTree import Element, tostring, SubElement
 
 from django.core.urlresolvers import resolve
@@ -75,11 +74,11 @@ class AirbrakeHandler(logging.Handler):
                 SubElement(request_xml, 'action').text = request.method
 
             params = SubElement(request_xml, 'params')
-            for key, value in request.REQUEST.items():
+            for key, value in request.POST.items():
                 SubElement(params, 'var', dict(key=key)).text = str(value)
 
             session = SubElement(request_xml, 'session')
-            for key, value in request.session.items():
+            for key, value in getattr(request, 'session', {}).items():
                 SubElement(session, 'var', dict(key=key)).text = str(value)
 
             cgi_data = SubElement(request_xml, 'cgi-data')
@@ -123,8 +122,6 @@ class AirbrakeHandler(logging.Handler):
         if status == 200:
             return
 
-        exceptionMessage = "Unexpected status code {0}".format(str(status))
-
         if status == 403:
             exceptionMessage = "Unable to send using SSL"
         elif status == 422:
@@ -135,5 +132,8 @@ class AirbrakeHandler(logging.Handler):
         elif status == 503:
             exceptionMessage = "Service unavailable. You may be over your " \
                                "quota."
+        else:
+            exceptionMessage = "Unexpected status code {0}".format(str(status))
 
-        print >>sys.stderr, '[django-airbrake]', exceptionMessage
+        # @todo log this message, but prevent circular logging
+        raise Exception('[django-airbrake] %s' % exceptionMessage)
