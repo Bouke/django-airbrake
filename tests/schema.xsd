@@ -48,15 +48,15 @@
       <xs:element name="url" type="xs:string"/>
       <xs:element name="component" type="xs:string"/>
       <xs:element name="action" type="xs:string" minOccurs="0"/>
-      <xs:element name="params" type="varList" minOccurs="0"/>
-      <xs:element name="session" type="varList" minOccurs="0"/>
-      <xs:element name="cgi-data" type="varList" minOccurs="0"/>
+      <xs:element name="params" type="varList" />
+      <xs:element name="session" type="varList" />
+      <xs:element name="cgi-data" type="varList" />
     </xs:all>
   </xs:complexType>
 
   <xs:complexType name="varList">
     <xs:sequence>
-      <xs:element name="var" type="var" maxOccurs="unbounded"/>
+      <xs:element name="var" type="var" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 

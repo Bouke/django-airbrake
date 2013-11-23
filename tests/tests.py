@@ -1,38 +1,35 @@
 import logging
-import unittest
-
-from lxml import etree
-from django import conf
-
+import xml.etree.ElementTree as etree
 try:
-    from django.conf.urls import url, patterns
-except ImportError:  # django 1.3
-    from django.conf.urls.defaults import url, patterns
-from mock import Mock
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
+from django.conf import settings
+from django.contrib.sessions.backends.db import SessionStore
+from django.test import TestCase
 
 import airbrake
-from airbrake.handlers import AirbrakeHandler
+from .urls import ViewException
 from .utils import xml_compare, xsd_validate
 
 
-class Test(unittest.TestCase):
+@patch('airbrake.handlers.urlopen', autospec=True)
+class XMLDataTest(TestCase):
     def setUp(self):
-        self.mock = Mock()
-
-        self.handler = AirbrakeHandler('MY_API_KEY', 'production')
-        self.handler._sendMessage = self.mock
-
         self.logger = logging.getLogger('test')
-        self.logger.addHandler(self.handler)
 
-    def test_exception(self):
+    def test_exception(self, urlopen):
+        urlopen.return_value.getcode.return_value = 200
+
         try:
             raise Exception('Could not find my shoes')
         except Exception as exc:
             self.logger.exception(exc)
-        xml = self.mock.call_args[0][0]
 
-        xsd_validate(etree.fromstring(xml))
+        self.assertTrue(urlopen.call_count, 1)
+        xml = urlopen.call_args[0][0].data
+        xsd_validate(xml)
 
         self.assertTrue(xml_compare(etree.fromstring("""
         <notice version="2.0">
@@ -43,7 +40,7 @@ class Test(unittest.TestCase):
                 <url>http://github.com/Bouke/django-airbrake</url>
             </notifier>
             <server-environment>
-                <environment-name>production</environment-name>
+                <environment-name>test</environment-name>
             </server-environment>
             <error>
                 <class>Exception</class>
@@ -59,28 +56,23 @@ class Test(unittest.TestCase):
             etree.fromstring(xml),
             self.fail))
 
-    def test_django_request(self):
-        def myview(request):
-            pass
-        conf.settings = conf.UserSettingsHolder(Mock(
-            ROOT_URLCONF=patterns('', url(r'^test/$', myview)),
-        ))
+    def test_django_request(self, urlopen):
+        urlopen.return_value.getcode.return_value = 200
+
+        session = SessionStore()
+        session['user'] = 'foobunny'
+        session.save()
+        self.client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
 
         try:
-            raise Exception('Could not find my Django')
-        except Exception as exc:
-            request = Mock(method='GET', path_info='/test/',
-                           build_absolute_uri=lambda: 'http://localhost/test/',
-                           REQUEST={'foo': 'bar', 'foo2': 'bar2'},
-                           GET={'foo': 'bar'},
-                           POST={'foo2': 'bar2'},
-                           META={'HTTP_USER_AGENT': 'my test agent'},
-                           session={'user': 'foobunny'})
-            self.logger.error(str(exc), exc_info=1, extra={'request': request})
+            self.client.post('/raises/?foo=bar', {'foo2': 'bar2'},
+                             HTTP_USER_AGENT='Python/3.3')
+        except ViewException:
+            pass
 
-        xml = self.mock.call_args[0][0]
-
-        xsd_validate(etree.fromstring(xml))
+        self.assertTrue(urlopen.call_count, 1)
+        xml = urlopen.call_args[0][0].data
+        xsd_validate(xml)
 
         self.assertTrue(xml_compare(etree.fromstring("""
         <notice version="2.0">
@@ -91,12 +83,12 @@ class Test(unittest.TestCase):
                 <url>http://github.com/Bouke/django-airbrake</url>
             </notifier>
             <server-environment>
-                <environment-name>production</environment-name>
+                <environment-name>test</environment-name>
             </server-environment>
             <request>
-                <url>http://localhost/test/</url>
-                <component>%(name)s.myview</component>
-                <action>GET</action>
+                <url>http://testserver/raises/?foo=bar</url>
+                <component>tests.urls.raises</component>
+                <action>POST</action>
                 <params>
                     <var key='foo'>bar</var>
                     <var key='foo2'>bar2</var>
@@ -106,19 +98,25 @@ class Test(unittest.TestCase):
                 </session>
                 <cgi-data>
                     <var key='DJANGO_SETTINGS_MODULE'>tests.settings</var>
-                    <var key='HTTP_USER_AGENT'>my test agent</var>
+                    <var key='HTTP_COOKIE'>sessionid=%(session)s</var>
+                    <var key='REMOTE_ADDR'>127.0.0.1</var>
+                    <var key='HTTP_USER_AGENT'>Python/3.3</var>
+                    <var key='SERVER_NAME'>testserver</var>
                 </cgi-data>
             </request>
             <error>
-                <class>Exception</class>
-                <message>Could not find my Django: Could not find my Django</message>
+                <class>ViewException</class>
+                <message>Internal Server Error: /raises/: Could not find my Django</message>
                 <backtrace>
                     <line file="*"
-                          method="test_django_request: raise Exception('Could not find my Django')"
+                          method="*"
+                          number="*" />
+                    <line file="*"
+                          method="raises: raise ViewException('Could not find my Django')"
                           number="*" />
                 </backtrace>
             </error>
         </notice>
-        """ % {'name': __name__, 'version': airbrake.__version__}),
+        """ % {'version': airbrake.__version__, 'session': session.session_key}),
             etree.fromstring(xml),
             self.fail))

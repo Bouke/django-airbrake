@@ -9,7 +9,7 @@ Django
 # Testing
 
 mock
-lxml
 coverage
 flake8
 tox
+sh

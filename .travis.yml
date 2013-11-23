@@ -17,6 +17,6 @@ matrix:
 install:
   - pip install Django==$DJANGO_VERSION
   - pip install -e .
-  - pip install coveralls lxml mock
+  - pip install coveralls mock
 script: make coverage
 after_success: coveralls

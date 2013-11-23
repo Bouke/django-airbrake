@@ -1,4 +1,6 @@
-from lxml import etree
+import os
+import tempfile
+import sh
 
 
 def xml_compare(x1, x2, reporter=None):
@@ -55,7 +57,10 @@ def text_compare(t1, t2):
     return (t1 or '').strip() == (t2 or '').strip()
 
 
-def xsd_validate(tree):
-    xml_doc = etree.parse('tests/schema.xsd')
-    xml_schema = etree.XMLSchema(xml_doc)
-    assert xml_schema.validate(tree)
+def xsd_validate(xml_bytes):
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(xml_bytes)
+        f.flush()
+
+        sh.xmllint(f.name, '--noout', '--schema',
+                   os.path.abspath('tests/schema.xsd'))

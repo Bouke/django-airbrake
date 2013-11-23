@@ -1,3 +1,5 @@
+TARGET?=tests
+
 .PHONY: flake8 example test coverage
 
 flake8:
@@ -9,12 +11,12 @@ example:
 
 test:
 	DJANGO_SETTINGS_MODULE=tests.settings PYTHONPATH=. \
-		django-admin.py test tests
+		django-admin.py test ${TARGET}
 
 coverage:
 	coverage erase
 	DJANGO_SETTINGS_MODULE=tests.settings PYTHONPATH=. \
 		coverage run --branch --source=airbrake \
-		`which django-admin.py` test tests
+		`which django-admin.py` test ${TARGET}
 	coverage html
 	coverage report

@@ -31,3 +31,25 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
     }
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'handlers': {
+        'airbrake': {
+            'level': 'WARNING',
+            'class': 'airbrake.handlers.AirbrakeHandler',
+            'api_key': 'MY_API_KEY',
+            'env_name': 'test',
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['airbrake'],
+            'level': 'WARNING',
+        },
+        'django.request': {
+            'propagate': True,
+        },
+    }
+}
