@@ -1,5 +1,7 @@
 import logging
 import xml.etree.ElementTree as etree
+from django.http import Http404
+
 try:
     from unittest.mock import patch
 except ImportError:
@@ -28,7 +30,7 @@ class XMLDataTest(TestCase):
         except Exception as exc:
             self.logger.exception(exc)
 
-        self.assertTrue(urlopen.call_count, 1)
+        self.assertEqual(urlopen.call_count, 1)
         xml = urlopen.call_args[0][0].data
         xsd_validate(xml)
 
@@ -66,12 +68,12 @@ class XMLDataTest(TestCase):
         self.client.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
 
         try:
-            self.client.post('/raises/?foo=bar', {'foo2': 'bar2'},
+            self.client.post('/raises/view-exception/?foo=bar', {'foo2': 'bar2'},
                              HTTP_USER_AGENT='Python/3.3')
         except ViewException:
             pass
 
-        self.assertTrue(urlopen.call_count, 1)
+        self.assertEqual(urlopen.call_count, 1)
         xml = urlopen.call_args[0][0].data
         xsd_validate(xml)
 
@@ -87,8 +89,8 @@ class XMLDataTest(TestCase):
                 <environment-name>test</environment-name>
             </server-environment>
             <request>
-                <url>http://testserver/raises/?foo=bar</url>
-                <component>tests.urls.raises</component>
+                <url>http://testserver/raises/view-exception/?foo=bar</url>
+                <component>tests.urls.raises_view_exception</component>
                 <action>POST</action>
                 <params>
                     <var key='foo2'>bar2</var>
@@ -99,20 +101,20 @@ class XMLDataTest(TestCase):
                 <cgi-data>
                     <var key='DJANGO_SETTINGS_MODULE'>tests.settings</var>
                     <var key='HTTP_COOKIE'>sessionid=%(session)s</var>
-                    <var key='REMOTE_ADDR'>127.0.0.1</var>
                     <var key='HTTP_USER_AGENT'>Python/3.3</var>
                     <var key='SERVER_NAME'>testserver</var>
+                    <var key='REMOTE_ADDR'>127.0.0.1</var>
                 </cgi-data>
             </request>
             <error>
                 <class>ViewException</class>
-                <message>Internal Server Error: /raises/: Could not find my Django</message>
+                <message>Internal Server Error: /raises/view-exception/: Could not find my Django</message>
                 <backtrace>
                     <line file="*"
                           method="*"
                           number="*" />
                     <line file="*"
-                          method="raises: raise ViewException('Could not find my Django')"
+                          method="raises_view_exception: raise ViewException('Could not find my Django')"
                           number="*" />
                 </backtrace>
             </error>
@@ -121,17 +123,39 @@ class XMLDataTest(TestCase):
             etree.fromstring(xml),
             self.fail))
 
+    def test_raises_404(self, urlopen):
+        urlopen.return_value.getcode.return_value = 200
+
+        try:
+            self.client.get('/raises/404/')
+        except Http404:
+            pass
+
+        self.assertEqual(urlopen.call_count, 0)
+
+    def test_raises_import_error(self, urlopen):
+        urlopen.return_value.getcode.return_value = 200
+
+        try:
+            self.client.get('/raises/import-error/')
+        except ImportError:
+            pass
+
+        self.assertEqual(urlopen.call_count, 1)
+        print urlopen.call_args[0][0].data
+        xsd_validate(urlopen.call_args[0][0].data)
+
 
 @patch('airbrake.handlers.urlopen', autospec=True)
 @override_settings(INSTALLED_APPS=['tests'], MIDDLEWARE_CLASSES=())
 class NoSessionTest(TestCase):
-    def test_raises(self, urlopen):
+    def test_raises_viewexception(self, urlopen):
         urlopen.return_value.getcode.return_value = 200
 
         try:
-            self.client.get('/raises/')
+            self.client.get('/raises/view-exception/')
         except ViewException:
             pass
 
-        self.assertTrue(urlopen.call_count, 1)
+        self.assertEqual(urlopen.call_count, 1)
         xsd_validate(urlopen.call_args[0][0].data)
