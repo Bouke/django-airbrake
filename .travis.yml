@@ -1,22 +1,40 @@
 language: python
-python:
-  - "2.6"
-  - "2.7"
-  - "3.2"
-  - "3.3"
-env:
-  - DJANGO_VERSION=1.4.10
-  - DJANGO_VERSION=1.5.5
-  - DJANGO_VERSION=1.6
+
 matrix:
-  exclude:
-    - python: "3.2"
-      env: DJANGO_VERSION=1.4.10
-    - python: "3.3"
-      env: DJANGO_VERSION=1.4.10
+  include:
+    - python: "2.7"
+      env: DJANGO=1.8 COVERAGE=YES
+    - python: "3.5"
+      env: DJANGO=1.8
+
+    - python: "2.7"
+      env: DJANGO=1.9
+    - python: "3.5"
+      env: DJANGO=1.9 COVERAGE=YES
+
+    - python: "3.4"
+      env: FLAKE8=YES
+
 install:
-  - pip install Django==$DJANGO_VERSION
-  - pip install -e .
-  - pip install coveralls mock sh
-script: make coverage
-after_success: coveralls
+  - if [[ $DJANGO ]]; then
+        if [[ $DJANGO != 1.10* ]]; then
+            pip install "django>=$DJANGO,<=$DJANGO.99";
+        fi;
+        pip install mock sh
+        pip install -e .;
+    fi;
+  - if [[ $COVERAGE == "YES" ]]; then pip install coveralls; fi;
+  - if [[ $FLAKE8 == "YES" ]]; then pip install flake8; fi;
+
+script:
+  - if [[ $DJANGO ]]; then
+        if [[ $COVERAGE != "YES" ]]; then
+            make test;
+        else
+            make coverage;
+        fi;
+    fi;
+  - if [[ $FLAKE8 == "YES" ]]; then make flake8; fi;
+
+after_success:
+  - if [[ $COVERAGE == "YES" ]]; then coveralls; fi;
