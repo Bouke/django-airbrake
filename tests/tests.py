@@ -77,6 +77,7 @@ class XMLDataTest(TestCase):
         xml = urlopen.call_args[0][0].data
         xsd_validate(xml)
 
+        # @todo cgi-data has undefined ordering, need to adjust xml validation
         self.assertTrue(xml_compare(etree.fromstring("""
         <notice version="2.0">
             <api-key>MY_API_KEY</api-key>
@@ -142,7 +143,6 @@ class XMLDataTest(TestCase):
             pass
 
         self.assertEqual(urlopen.call_count, 1)
-        print urlopen.call_args[0][0].data
         xsd_validate(urlopen.call_args[0][0].data)
 
 

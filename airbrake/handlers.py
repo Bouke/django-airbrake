@@ -70,7 +70,8 @@ class AirbrakeHandler(logging.Handler):
             SubElement(request_xml, 'url').text = request.build_absolute_uri()
 
             if match:
-                SubElement(request_xml, 'component').text = match.url_name
+                SubElement(request_xml, 'component').text = "%s.%s" % \
+                    (match.func.__module__, match.func.__name__)
                 SubElement(request_xml, 'action').text = request.method
 
             params = SubElement(request_xml, 'params')
