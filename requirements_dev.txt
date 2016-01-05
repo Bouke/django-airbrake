@@ -13,3 +13,8 @@ coverage
 flake8
 tox
 sh
+
+# Build
+
+wheel
+bumpversion
