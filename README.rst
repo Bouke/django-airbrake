@@ -16,10 +16,11 @@ Django Airbrake
 
 Django Airbrake provides a logging handler to push exceptions and other errors
 to airbrakeapp or other airbrake-compatible exception handler services (e.g.
-aTech Media's Codebase). Django 1.4, 1.5 and 1.6 are supported on Python 2.6,
-2.7, 3.2 and 3.3.
+aTech Media's Codebase).
 
-Django 1.3 was supported until version 0.3.0.
+Compatible with all supported Django (LTS) versions. At the moment of writing
+that's including 1.8 and 1.9 on Python 2.7, 3.2, 3.3 and 3.4.
+
 
 Installation
 ============
@@ -92,3 +93,12 @@ Contributing
 * Fork the repository on GitHub and start hacking.
 * Run the tests.
 * Send a pull request with your changes.
+
+Releasing
+---------
+The following actions are required to push a new version::
+
+    bumpversion [major|minor|patch]
+    git commit -am "Released [version]"
+    git tag [version]
+    python setup.py sdist bdist_wheel upload
