@@ -3,24 +3,29 @@ language: python
 matrix:
   include:
     - python: "2.7"
-      env: DJANGO=1.8 COVERAGE=YES
+      env: DJANGO=1.11 COVERAGE=YES
+    - python: "3.4"
+      env: DJANGO=1.11
     - python: "3.5"
-      env: DJANGO=1.8
-
-    - python: "2.7"
-      env: DJANGO=1.9
-    - python: "3.5"
-      env: DJANGO=1.9 COVERAGE=YES
+      env: DJANGO=1.11
+    - python: "3.6"
+      env: DJANGO=1.11 
 
     - python: "3.4"
-      env: FLAKE8=YES
+      env: DJANGO=2.0 
+    - python: "3.5"
+      env: DJANGO=2.0
+    - python: "3.6"
+      env: DJANGO=2.0 COVERAGE=YES FLAKE8=YES
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libxml2-utils
 
 install:
   - if [[ $DJANGO ]]; then
-        if [[ $DJANGO != 1.10* ]]; then
-            pip install "django>=$DJANGO,<=$DJANGO.99";
-        fi;
-        pip install mock sh
+        pip install "django>=$DJANGO,<=$DJANGO.99";
+        pip install mock sh;
         pip install -e .;
     fi;
   - if [[ $COVERAGE == "YES" ]]; then pip install coveralls; fi;

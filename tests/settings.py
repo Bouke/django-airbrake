@@ -11,7 +11,8 @@ INSTALLED_APPS = [
     'tests',
 ]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -44,12 +45,14 @@ LOGGING = {
         }
     },
     'loggers': {
-        '': {
+        'test': {
             'handlers': ['airbrake'],
-            'level': 'WARNING',
+            'level': 'WARNING'
         },
         'django.request': {
+            'handlers': ['airbrake'],
             'propagate': True,
+            'level': 'WARNING'
         },
     }
 }

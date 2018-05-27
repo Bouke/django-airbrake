@@ -37,11 +37,13 @@ def xml_compare(x1, x2, reporter=None):
         return False
     for i, c1 in enumerate(cl1):
         for c2 in cl2:
-            if xml_compare(c1, c2, reporter=reporter):  # no reporter, fail silently
-                cl2.remove(c2)
+            if xml_compare(c1, c2):  # no reporter, fail silently
+                # cl2.remove(c2)
                 break
         else:
             if reporter:
+                xml_compare(c1, x2.getchildren()[i], reporter=reporter)
+                # xml_compare(c1, cl2[0], reporter=reporter)
                 reporter('<%s> children %i do not match: %s'
                          % (x1.tag, i, c1.tag))
             return False

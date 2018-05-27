@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.http.response import Http404
 
 
@@ -15,12 +15,11 @@ def raises_view_exception(request):
 
 
 def raises_import_error(request):
-    import invalid.package.name
+    import invalid.package.name  # NOQA
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^raises/404/$', raises_404),
     url(r'^raises/view-exception/$', raises_view_exception),
     url(r'^raises/import-error/$', raises_import_error),
-)
+]

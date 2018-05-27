@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+"c58b601" = {path = ".", editable = true}
+django = {version = "<=2.0.5,>=1.11"}
+mock = "*"
+coverage = "*"
+"flake8" = "*"
+tox = "*"
+sh = "*"
+bumpversion = "*"
+tox-pyenv = "*"
+
+[requires]
+python_version = "3.6"

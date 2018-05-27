@@ -7,8 +7,10 @@ except ImportError:
     from urllib2 import Request, urlopen, HTTPError
 import os
 from xml.etree.ElementTree import Element, tostring, SubElement
-
-from django.core.urlresolvers import resolve
+try:
+    from django.core.urlresolvers import resolve
+except ImportError:  # Must be Django Version >=2.0
+    from django.urls import resolve
 from django.http import Http404
 
 from airbrake import __version__, __app_name__, __app_url__

@@ -19,7 +19,7 @@ to airbrakeapp or other airbrake-compatible exception handler services (e.g.
 aTech Media's Codebase).
 
 Compatible with all supported Django (LTS) versions. At the moment of writing
-that's including 1.8 and 1.9 on Python 2.7, 3.2, 3.3 and 3.4.
+that's including 1.11 and 2.0 on Python 2.7(only django1.11), 3.4, 3.5 and 3.6.
 
 
 Installation

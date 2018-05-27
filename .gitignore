@@ -2,3 +2,4 @@
 /.tox/
 /.coverage
 /htmlcov/
+Pipfile.lock
